@@ -1,59 +1,63 @@
-﻿using ScottPlot;
+﻿using CSC418ConsoleApp.Models;
+using ScottPlot;
 
-Random random = new();
-int n = 1000;
-double b = 5.0;
-double step = 0.5;
-double[] x = new double[n];
-double[] rv = new double[n];
-Func<double, double> PDF = (x) => (1.0/b) * System.Math.Exp(-System.Math.Max(0,x)/b);
-Func<double, double> CDF = (x) => 1 - System.Math.Exp(-System.Math.Max(0,x)/b);
-Func<double, double, double> PCDF = (a, b) => CDF(b) - CDF(a);
+namespace CSC418ConsoleApp;
 
-for (int i = 0; i < n; i++)
+public static class Program
 {
-    x[i] = random.NextDouble();
-    rv[i] = -b * System.Math.Log(x[i]);
+    static void Main(string[] args)
+    {
+        SingleServerQueueing ssq = new(1, 0.5);
+        ssq.startSim(10000, 1000);
+    }
 }
 
-double mx = rv.Max();
+//int n = 1000;
+//    double b = 5.0;
+//    double step = 0.5;
+//    RandGen exp_gen = RandGen.CreateExponential(b);
+//    double[] rv = new double[n];
+//    Func<double, double> PDF = (x) => (1.0 / b) * System.Math.Exp(-System.Math.Max(0, x) / b);
+//    Func<double, double> CDF = (x) => 1 - System.Math.Exp(-System.Math.Max(0, x) / b);
+//    Func<double, double, double> PCDF = (a, b) => CDF(b) - CDF(a);
 
-int np = (int) (System.Math.Ceiling(mx) / step + 1);
-double[] dataX = [.. Enumerable.Range(0, np - 1).Select(i => i * step)];
-int[] dataY = new int[np];
+//        for (int i = 0; i<n; i++)
+//        {
+//            rv[i] = exp_gen.Next();
+//        }
 
-foreach (var item in rv)
-{
-    int p = (int) System.Math.Round(item / step);
-    dataY[p] += 1;
-}
+//        double mx = rv.Max();
 
-for (int i = 1; i < np; i++)
-    dataY[i] += dataY[i-1];
+//int np = (int)(System.Math.Ceiling(mx) / step + 1);
+//double[] dataX = [.. Enumerable.Range(0, np - 1).Select(i => i * step)];
+//int[] dataY = new int[np];
 
-Console.WriteLine($"Sum: {dataY.Sum()}");
-foreach (var data in dataY)
-{
-    Console.WriteLine(data);
-}
+//foreach (var item in rv)
+//{
+//    int p = (int)System.Math.Round(item / step);
+//    dataY[p] += 1;
+//}
 
-ScottPlot.Plot myPlot = new();
-var obs = myPlot.Add.Scatter(dataX, [..dataY.Select(d => (double) d/n)], Colors.Blue.WithAlpha(.8));
-obs.LegendText = "Observed";
+//for (int i = 1; i < np; i++)
+//    dataY[i] += dataY[i - 1];
 
-var actual = myPlot.Add.Function(CDF);
-actual.LineColor = Colors.Orange;
-actual.LegendText = "Actual";
+//ScottPlot.Plot myPlot = new();
+//var obs = myPlot.Add.Scatter(dataX, [.. dataY.Select(d => (double)d / n)], Colors.Blue.WithAlpha(.8));
+//obs.LegendText = "Observed";
 
-myPlot.Axes.Title.Label.Text = $"Cummulative Distribution of {n} Exponential Random Variable with mean {b:f2}";
-myPlot.Legend.Alignment = Alignment.UpperRight;
-// myPlot.Axes.Title.Label.ForeColor = Colors.RebeccaPurple;
-// myPlot.Axes.Title.Label.FontSize = 32;
+//var actual = myPlot.Add.Function(CDF);
+//actual.LineColor = Colors.Orange;
+//actual.LegendText = "Actual";
 
-myPlot.Axes.SetLimits(0, mx, 0, 1);
+//myPlot.Axes.Title.Label.Text = $"Cummulative Distribution of {n} Exponential Random Variable with mean {b:f2}";
+//myPlot.Legend.Alignment = Alignment.UpperRight;
+//// myPlot.Axes.Title.Label.ForeColor = Colors.RebeccaPurple;
+//// myPlot.Axes.Title.Label.FontSize = 32;
 
-myPlot.ShowLegend();
+//myPlot.Axes.SetLimits(0, mx, 0, 1);
 
-// myPlot.SaveSvg("quickstart.svg", 400, 300);
-myPlot.SaveSvg("temp/exp_cdf.svg", 800, 450);
-myPlot.SavePng("temp/exp_cdf.png", 800, 450);
+//myPlot.ShowLegend();
+
+//// myPlot.SaveSvg("quickstart.svg", 400, 300);
+//myPlot.SaveSvg(Path.Combine(targetFolder, "exp_cdf.svg"), 800, 450);
+//myPlot.SavePng(Path.Combine(targetFolder, "exp_cdf.png"), 800, 450);
