@@ -9,7 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="33.1.0" />
     <PackageReference Include="ScottPlot" Version="5.1.57" />
+    <PackageReference Include="TableToImageExport" Version="1.1.8" />
   </ItemGroup>
 
   <ItemGroup>

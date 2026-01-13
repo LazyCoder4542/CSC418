@@ -1,10 +1,14 @@
-﻿using System;
+﻿using CSC418ConsoleApp.Generators;
+using CSC418ConsoleApp.Utils;
+using CsvHelper;
+using ScottPlot;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CSC418ConsoleApp.Generators;
-using CSC418ConsoleApp.Utils;
 
 namespace CSC418ConsoleApp.Models
 {
@@ -72,7 +76,7 @@ namespace CSC418ConsoleApp.Models
                 // Begin Event Cycle
                 TimingRoutine();
 
-                stats.Push(q_t / time, totalDelay / numberDelayed, b_t / time);
+                stats.Push(q_t / time, totalDelay / numberDelayed, b_t / time, serverStatus ? numberDelayed - 1 : numberDelayed);
             
             }
             stats.Report();
@@ -155,32 +159,62 @@ namespace CSC418ConsoleApp.Models
     }
     internal class SingleServerQueueingStats
     {
-        readonly List<double> serverUtilization = [];
-        readonly List<double> avgDelay = [];
-        readonly List<double> avgQueueLength = [];
-        internal void Push(double avgQ, double avgD, double b)
+        public readonly List<SingleServerReportEntry> ssre = [];
+        internal void Push(double avgQ, double avgD, double b, int n)
         {
-            serverUtilization.Add(b);
-            avgDelay.Add(avgD);
-            avgQueueLength.Add(avgQ);
+            var newEntry = new SingleServerReportEntry(avgD, avgQ, b, n);
+            ssre.Add(newEntry);
         }
         internal void Reset()
         {
-            serverUtilization.Clear();
-            avgDelay.Clear();
-            avgQueueLength.Clear();
+            ssre.Clear();
         }
         internal void Report() {
-            Console.WriteLine($"Delay: {avgDelay.Average()}, Queue Length: {avgQueueLength.Average()}, Server Utilization: {serverUtilization.Average()}");
-            Plot.HistoPDF(avgDelay.ToArray(), "Average delay in queue");
+            Console.WriteLine($"Delay: {ssre.Select(r => r.AvgDelay).Average()}, Queue Length: {ssre.Select(r => r.AvgQueueLength).Average()}, Server Utilization: {ssre.Select(r => r.ServerUtilization).Average()}, Number of Customers Served: {ssre.Select(r => r.NumberServed).Average()}");
+            //Utils.Plot.HistoPDF([.. ssre.Select(r => r.AvgDelay)], "Average delay in queue");
+
+            
+            Multiplot multiplot = new();
+
+            // configure the multiplot to have 4 subplots
+            multiplot.AddPlots(4);
+
+            // add sample data to each subplot
+            ScottPlot.Plot plot = multiplot.GetPlot(0);
+            Utils.Plot.HistoPDF(plot, [.. ssre.Select(r => r.AvgDelay)], "Average delay in queue");
+
+            ScottPlot.Plot plot2 = multiplot.GetPlot(1);
+            Utils.Plot.HistoPDF(plot2, [.. ssre.Select(r => r.AvgQueueLength)], "Average queue length", clr: Colors.C1);
+
+            ScottPlot.Plot plot3 = multiplot.GetPlot(2);
+            Utils.Plot.HistoPDF(plot3, [.. ssre.Select(r => r.ServerUtilization)], "Average server utilization", clr: Colors.C2);
+
+            ScottPlot.Plot plot4 = multiplot.GetPlot(3);
+            Utils.Plot.HistoPDF(plot4, [.. ssre.Select(r => r.NumberServed)], "Average number of customers served", clr: Colors.C3);
+
+            // configure the multiplot to use a grid layout
+            multiplot.Layout = new ScottPlot.MultiplotLayouts.Grid(rows: 2, columns: 2);
+
+            multiplot.SavePng(Path.Combine(Globals._targetFolder, "demo.png"), 900, 675);
+            multiplot.SavePng(Path.Combine(Globals._targetFolder, "demo.svg"), 900, 675);
+
+            SaveCSV();
+
+        }
+        internal void SaveCSV()
+        {
+            using (var writer = new StreamWriter(Path.Combine(Globals._targetFolder, "output_ssq.csv")))
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                csv.WriteRecords(ssre);
+            }
         }
     }
-    public class SingleServerReportEntry {
-        public int Id { get; set; }
-        public double ServerUtilization { get; set; }
-        public double AvgDelay { get; set; }
-        public double AvgQueueLength { get; set; }
-        public int NumberServed { get; set; }
+    public class SingleServerReportEntry(double avgD, double avgQ, double su, int ns) {
+        public double ServerUtilization { get; set; } = su;
+        public double AvgDelay { get; set; } = avgD;
+        public double AvgQueueLength { get; set; } = avgQ;
+        public int NumberServed { get; set; } = ns;
 
     }
 

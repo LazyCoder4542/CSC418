@@ -9,9 +9,15 @@ namespace CSC418ConsoleApp.Utils
 {
     internal static class Plot
     {
-        public static void HistoPDF(double[] data, string xLabel, string yLabel = "Proportion", string path = "histogram.png")
+        public static ScottPlot.Plot HistoPDF(double[] data, string xLabel, string? yLabel = "Proportion", Color? clr = null)
         {
             ScottPlot.Plot myPlot = new();
+            HistoPDF(myPlot, data, xLabel, yLabel, clr);
+            return myPlot;
+        }
+
+        public static void HistoPDF(ScottPlot.Plot myPlot, double[] data, string xLabel, string? yLabel = "Proportion", Color? clr = null)
+        {
 
             // Create a histogram from a collection of values
             var hist = ScottPlot.Statistics.Histogram.WithBinCount(100, data);
@@ -25,7 +31,7 @@ namespace CSC418ConsoleApp.Utils
                 bar.Size = hist.FirstBinSize;
                 bar.LineWidth = 0;
                 bar.FillStyle.AntiAlias = false;
-                bar.FillColor = Colors.C0.Lighten(.3);
+                bar.FillColor = clr ?? Colors.C0.Lighten(.3);
             }
 
             // Plot the probability curve on top the histogram
@@ -44,7 +50,6 @@ namespace CSC418ConsoleApp.Utils
             myPlot.YLabel(yLabel);
             myPlot.XLabel(xLabel);
 
-            myPlot.SavePng(Path.Combine(Globals._targetFolder, path), 600, 450);
         }
     }
 }
