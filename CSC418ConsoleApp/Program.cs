@@ -7,57 +7,20 @@ public static class Program
 {
     static void Main(string[] args)
     {
+        // SSQ Driver code
         SingleServerQueueing ssq = new(1, 0.5);
         ssq.startSim(10000, 1000);
+
+        // Inventory system Driver code
+        //List<Tuple<int, double>> demand_dist = [Tuple.Create(1, 1.0 / 6), Tuple.Create(2, 1.0 / 3)];
+        //double meanInterDemandTime = 0.1;
+        //Tuple<double, double> lagTime = Tuple.Create(0.5, 1.0);
+
+        //InvertorySystem ivsys = new(demand_dist, meanInterDemandTime, lagTime, 1);
+
+        //double simEnd = 120;
+        //List<(int S, int s)> policies = [(20, 40), (20, 60), (20, 80), (20, 100), (40, 60), (40, 80), (40, 100), (60, 80), (60, 100)];
+
     }
 }
 
-//int n = 1000;
-//    double b = 5.0;
-//    double step = 0.5;
-//    RandGen exp_gen = RandGen.CreateExponential(b);
-//    double[] rv = new double[n];
-//    Func<double, double> PDF = (x) => (1.0 / b) * System.Math.Exp(-System.Math.Max(0, x) / b);
-//    Func<double, double> CDF = (x) => 1 - System.Math.Exp(-System.Math.Max(0, x) / b);
-//    Func<double, double, double> PCDF = (a, b) => CDF(b) - CDF(a);
-
-//        for (int i = 0; i<n; i++)
-//        {
-//            rv[i] = exp_gen.Next();
-//        }
-
-//        double mx = rv.Max();
-
-//int np = (int)(System.Math.Ceiling(mx) / step + 1);
-//double[] dataX = [.. Enumerable.Range(0, np - 1).Select(i => i * step)];
-//int[] dataY = new int[np];
-
-//foreach (var item in rv)
-//{
-//    int p = (int)System.Math.Round(item / step);
-//    dataY[p] += 1;
-//}
-
-//for (int i = 1; i < np; i++)
-//    dataY[i] += dataY[i - 1];
-
-//ScottPlot.Plot myPlot = new();
-//var obs = myPlot.Add.Scatter(dataX, [.. dataY.Select(d => (double)d / n)], Colors.Blue.WithAlpha(.8));
-//obs.LegendText = "Observed";
-
-//var actual = myPlot.Add.Function(CDF);
-//actual.LineColor = Colors.Orange;
-//actual.LegendText = "Actual";
-
-//myPlot.Axes.Title.Label.Text = $"Cummulative Distribution of {n} Exponential Random Variable with mean {b:f2}";
-//myPlot.Legend.Alignment = Alignment.UpperRight;
-//// myPlot.Axes.Title.Label.ForeColor = Colors.RebeccaPurple;
-//// myPlot.Axes.Title.Label.FontSize = 32;
-
-//myPlot.Axes.SetLimits(0, mx, 0, 1);
-
-//myPlot.ShowLegend();
-
-//// myPlot.SaveSvg("quickstart.svg", 400, 300);
-//myPlot.SaveSvg(Path.Combine(targetFolder, "exp_cdf.svg"), 800, 450);
-//myPlot.SavePng(Path.Combine(targetFolder, "exp_cdf.png"), 800, 450);

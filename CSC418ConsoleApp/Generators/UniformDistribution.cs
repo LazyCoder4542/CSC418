@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CSC418ConsoleApp.Generators
 {
-    internal class UniformDistribution : RandGen
+    internal class UniformDistribution : RandGen<double>
     {
         private readonly Random _random;
         private readonly double _min;

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace CSC418ConsoleApp.Generators
 {
-    internal class ExponentialDistribution(double mean) : RandGen
+    internal class ExponentialDistribution(double mean) : RandGen<double>
     {
-        private readonly RandGen _rand = RandGen.CreateUniform(0, 1);
+        private readonly RandGen<double> _rand = RandGen.CreateUniform(0, 1);
         private readonly double _m = mean;
 
         public override double Next()

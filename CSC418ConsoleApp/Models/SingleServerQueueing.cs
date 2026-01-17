@@ -16,8 +16,8 @@ namespace CSC418ConsoleApp.Models
     {
         private readonly double eS; // expected service time
         private readonly double eA; // expected inter-arrival time
-        private readonly RandGen sRand; // service time generator
-        private readonly RandGen aRand; // inter arrival time generator
+        private readonly RandGen<double> sRand; // service time generator
+        private readonly RandGen<double> aRand; // inter arrival time generator
         private readonly SimClock clk;
         private readonly EventList eventList;
 
@@ -85,7 +85,7 @@ namespace CSC418ConsoleApp.Models
         {
             stats.Reset();
         }
-        private void ScheduleEvent(string name, RandGen gen)
+        private void ScheduleEvent(string name, RandGen<double> gen)
         {
             ScheduleEvent(name, gen.Next() + clk.CurrentTime);
         }

@@ -6,17 +6,24 @@ using System.Threading.Tasks;
 
 namespace CSC418ConsoleApp.Generators
 {
-    internal abstract class RandGen
+    internal abstract class RandGen<T>
     {
-        abstract public double Next();
+        abstract public T Next();
+    }
 
-        static public RandGen CreateUniform(double a, double b)
+    internal static class RandGen
+    {
+        static public RandGen<double> CreateUniform(double a, double b)
         {
             return new UniformDistribution(a, b);
         }
-        static public RandGen CreateExponential(double mean)
+        static public RandGen<double> CreateExponential(double mean)
         {
             return new ExponentialDistribution(mean);
+        }
+        static public RandGen<T> CreateDiscreteDist<T>(List<Tuple<T, double>> dist)
+        {
+            return new DiscreteDistribution<T>(dist);
         }
     }
 }
