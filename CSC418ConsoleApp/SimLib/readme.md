@@ -234,6 +234,6 @@ Event handlers receive these parameters:
 
 ## License
 
-MIT License - see the [LICENSE](LICENSE) file for full details.
+MIT License - see the [LICENSE](https://github.com/LazyCoder4542/CSC418/blob/main/LICENSE) file for full details.
 
-Copyright (c) 2026 [Your Name]
+Copyright (c) 2026 Adeola Fadare
