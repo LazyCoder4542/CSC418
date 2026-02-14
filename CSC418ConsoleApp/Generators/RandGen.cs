@@ -13,17 +13,17 @@ namespace CSC418ConsoleApp.Generators
 
     internal static class RandGen
     {
-        static public RandGen<double> CreateUniform(double a, double b)
+        static public RandGen<double> CreateUniform(double a, double b, Random? stream = null)
         {
-            return new UniformDistribution(a, b);
+            return new UniformDistribution(a, b, stream);
         }
-        static public RandGen<double> CreateExponential(double mean)
+        static public RandGen<double> CreateExponential(double mean, Random? stream = null)
         {
-            return new ExponentialDistribution(mean);
+            return new ExponentialDistribution(mean, stream);
         }
-        static public RandGen<T> CreateDiscreteDist<T>(List<Tuple<T, double>> dist)
+        static public RandGen<T> CreateDiscreteDist<T>(List<Tuple<T, double>> dist, Random? stream = null)
         {
-            return new DiscreteDistribution<T>(dist);
+            return new DiscreteDistribution<T>(dist, stream);
         }
     }
 }

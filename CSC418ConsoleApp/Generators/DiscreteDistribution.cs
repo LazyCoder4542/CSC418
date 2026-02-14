@@ -11,9 +11,9 @@ namespace CSC418ConsoleApp.Generators
         private readonly RandGen<double> _random;
         private readonly List<double> p = [];
         private readonly List<T> v = [];
-        public DiscreteDistribution(List<Tuple<T, double>> dist)
+        public DiscreteDistribution(List<Tuple<T, double>> dist, Random? stream = null)
         {
-            _random = RandGen.CreateUniform(0, 1);
+            _random = RandGen.CreateUniform(0, 1, stream);
             double cumP = 0;
             for (int i = 0; i < dist.Count; i++)
             {
@@ -43,6 +43,11 @@ namespace CSC418ConsoleApp.Generators
         {
             double x = _random.Next();
             return v[Search(x)];
+        }
+        public static T StreamNext(List<Tuple<T, double>> dist, Random stream)
+        {
+            DiscreteDistribution<T> self = new(dist, stream);
+            return self.Next();
         }
     }
 }
