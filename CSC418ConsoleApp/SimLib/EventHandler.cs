@@ -14,7 +14,8 @@ namespace CSC418ConsoleApp.SimLib
             this.eventId = eventId;
         }
 
-        abstract public void HandleEvent(double clockTime,
+        abstract public void HandleEvent(double[] param,
+                                         double clockTime,
                                          Action<double, int> sampst,
                                          Action<double, int> timest,
                                          Action<int, double> scheduleEvent,

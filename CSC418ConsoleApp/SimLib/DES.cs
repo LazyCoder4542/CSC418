@@ -117,12 +117,13 @@ namespace CSC418ConsoleApp.SimLib
             if (eventList.Count > 0)
             {
                 var nextEvent = eventList.RemoveFirst();
-                int nextEventTime = (int) nextEvent[0];
+                double nextEventTime = nextEvent[0];
                 int nextEventType = (int) nextEvent[1];
+                double[] nextEventParams = nextEvent.Skip(2).ToArray();
 
-                clock.Advance(nextEvent[0]);
+                clock.Advance(nextEventTime);
 
-                CallHandleEvent(nextEventType);
+                CallHandleEvent(nextEventType, nextEventParams);
 
             }
         }
@@ -131,10 +132,10 @@ namespace CSC418ConsoleApp.SimLib
         /// Invokes the appropriate event handler for the specified event type.
         /// </summary>
         /// <param name="eventId">ID of the event to handle</param>
-        public void CallHandleEvent(int eventId)
+        public void CallHandleEvent(int eventId, double[] param)
         {
             var handler = eventHandlers[eventId];
-            handler.HandleEvent(clock.CurrentTime, SampSt, TimeSt, ScheduleEvent, GetList, Expon, Uniform, Discrete<double>, StopSim);
+            handler.HandleEvent(param, clock.CurrentTime, SampSt, TimeSt, ScheduleEvent, GetList, Expon, Uniform, Discrete<double>, StopSim);
         }
 
         /// <summary>

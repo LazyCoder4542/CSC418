@@ -9,6 +9,7 @@ SimLib provides a flexible framework for modeling discrete event systems. The co
 ## Features
 
 - **Event-driven architecture** with customizable event handlers
+- **Parameterized events** for passing data to event handlers
 - **Statistical collection** for both sample-based and time-weighted metrics
 - **Multiple random number streams** with built-in distributions (Exponential, Uniform, Discrete)
 - **Flexible list management** for queues, servers, and event scheduling
@@ -70,6 +71,7 @@ internal class ArrivalEventHandler : EventHandler
     }
 
     public override void HandleEvent(
+        double[] param,              // Event parameters (if any)
         double clockTime,
         Action<double, int> sampst,
         Action<double, int> timest,
@@ -101,6 +103,66 @@ internal class ArrivalEventHandler : EventHandler
         }
     }
 }
+
+internal class DepartureEventHandler : EventHandler
+{
+    private readonly double ST;
+    
+    public DepartureEventHandler(double ST) : base((int)EventType.DEPARTURE) {
+        this.ST = ST;
+    }
+
+    public override void HandleEvent(
+        double[] param,
+        double clockTime,
+        Action<double, int> sampst,
+        Action<double, int> timest,
+        Action<int, double> scheduleEvent,
+        Func<int, RecordList> list,
+        Func<double, int, double> expon,
+        Func<double, double, int, double> uniform,
+        Func<List<Tuple<double, double>>, int, double> discrete,
+        Action stopSim)
+    {
+        var queue = list((int)ListType.QUEUE);
+        var server = list((int)ListType.SERVER);
+
+        server.RemoveFirst();
+
+        if (queue.Count > 0) {
+            double arrivalTime = queue.RemoveFirst()[0];
+            double delay = clockTime - arrivalTime;
+            sampst(delay, (int)SampstType.DELAY_IN_QUEUE);
+            server.Add([clockTime]);
+            double serviceTime = expon(ST, (int)StreamType.SERVICE);
+            scheduleEvent((int)EventType.DEPARTURE, clockTime + serviceTime);
+            sampst(1, (int)SampstType.NUM_DELAYED);
+            timest(queue.Count, (int)TimestType.NUM_IN_QUEUE);
+        }
+
+        timest(server.Count > 0 ? 1 : 0, (int)TimestType.SERVER_UTILIZATION);
+    }
+}
+
+internal class EndSimEventHandler : EventHandler
+{
+    public EndSimEventHandler() : base((int)EventType.ENDSIMULATION) {}
+
+    public override void HandleEvent(
+        double[] param,
+        double clockTime,
+        Action<double, int> sampst,
+        Action<double, int> timest,
+        Action<int, double> scheduleEvent,
+        Func<int, RecordList> list,
+        Func<double, int, double> expon,
+        Func<double, double, int, double> uniform,
+        Func<List<Tuple<double, double>>, int, double> discrete,
+        Action stopSim)
+    {
+        stopSim();
+    }
+}
 ```
 
 ### 3. Set Up and Run Your Simulation
@@ -109,9 +171,15 @@ public class SSQ
 {
     private readonly DES des;
     private readonly double endTime;
+    private readonly double IAT;
+    private readonly double ST;
 
     public SSQ(double interArrivalTime, double serviceTime, double endTime = 1000)
     {
+        this.IAT = interArrivalTime;
+        this.ST = serviceTime;
+        this.endTime = endTime;
+        
         int sV = Enum.GetValues<SampstType>().Length;
         int tV = Enum.GetValues<TimestType>().Length;
         int nS = Enum.GetValues<StreamType>().Length;
@@ -120,7 +188,7 @@ public class SSQ
         ValueTuple<int, int>[] listConfig = [
             (1, -1),  // Queue: stores arrival time
             (1, -1),  // Server: dummy record
-            (2, 0)    // Event list: ranked by time
+            (2, 0)    // Event list: time and eventId (ranked by time)
         ];
         
         EventHandler[] handlers = [
@@ -131,7 +199,6 @@ public class SSQ
         
         this.des = new DES(sV, tV, listConfig, handlers, 
             (int)ListType.EVENTLIST, nS);
-        this.endTime = endTime;
     }
 
     public void StartSim()
@@ -185,6 +252,37 @@ Each list is configured as a tuple `(numAttributes, rankAttribute)`:
 - `numAttributes`: Number of values stored per record
 - `rankAttribute`: Index of attribute to rank by (-1 for FIFO)
 
+**Event List Requirements:**
+- Must have at least 2 attributes: `[time, eventId, ...additional params]`
+- First attribute (index 0): Event time - used for ranking
+- Second attribute (index 1): Event type ID
+- Additional attributes (index 2+): Optional parameters passed to event handler
+
+### Event Parameters
+
+When scheduling events, you can pass additional parameters that will be available in the event handler:
+```csharp
+// Simple event (no additional parameters)
+scheduleEvent((int)EventType.ARRIVAL, time);
+
+// Event with parameters (for more complex simulations)
+// Parameters stored in event list and passed to handler via param[] array
+scheduleEvent((int)EventType.CUSTOM, time, customerId, priority, jobType);
+```
+
+In your event handler, access parameters via the `param` array:
+```csharp
+public override void HandleEvent(
+    double[] param,  // Additional event parameters (if any)
+    double clockTime,
+    // ... other parameters
+)
+{
+    // param[0], param[1], etc. contain additional event data
+    // Empty array if no additional parameters were scheduled
+}
+```
+
 ### Statistical Variables
 
 **Sample-based (`SampSt`)**: For discrete observations
@@ -216,6 +314,7 @@ int value = des.Discrete(dist, streamId);
 ### Event Handling
 
 Event handlers receive these parameters:
+- `param`: Array of additional parameters from the event record
 - `clockTime`: Current simulation time
 - `sampst`: Update sample-based statistic
 - `timest`: Update time-weighted statistic
@@ -224,13 +323,42 @@ Event handlers receive these parameters:
 - `expon`, `uniform`, `discrete`: Random variate generators
 - `stopSim`: Stop the simulation
 
+## Advanced Usage
+
+### Parameterized Events Example
+
+For more complex simulations where events need additional context:
+```csharp
+// Event list configuration with extra parameters
+// [time, eventId, customerId, priority]
+readonly (int, int) eventListConf = (4, 0);
+
+// Schedule event with parameters
+scheduleEvent((int)EventType.CUSTOMER_ARRIVAL, time, customerId, priority);
+
+// Access in handler
+public override void HandleEvent(double[] param, double clockTime, ...)
+{
+    double customerId = param[0];
+    double priority = param[1];
+    
+    // Use parameters in your logic
+    if (priority > 5) {
+        // Handle high-priority customer
+    }
+}
+```
+
 ## Best Practices
 
 1. **Use enums** for type-safe indexing of events, lists, statistics, and streams
 2. **Initialize properly**: Call `des.Init()` before each simulation run
 3. **Schedule termination**: Always schedule an end simulation event
 4. **Separate concerns**: Keep event logic in dedicated handler classes
-5. **Calculate averages**: Divide accumulated statistics by appropriate denominators
+5. **Event list structure**: Always configure with at least 2 attributes (time, eventId)
+6. **Parameter passing**: Use event parameters for complex simulations requiring context
+7. **Calculate averages**: Divide accumulated statistics by appropriate denominators
+
 
 ## License
 

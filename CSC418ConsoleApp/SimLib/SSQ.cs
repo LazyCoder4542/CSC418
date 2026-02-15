@@ -110,7 +110,8 @@ namespace CSC418ConsoleApp.SimLib
             this.ST = ST;
         }
 
-        public override void HandleEvent(double clockTime,
+        public override void HandleEvent(double[] param,
+                                         double clockTime,
                                          Action<double, int> sampst,
                                          Action<double, int> timest,
                                          Action<int, double> scheduleEvent,
@@ -151,7 +152,8 @@ namespace CSC418ConsoleApp.SimLib
             this.ST = ST;
         }
 
-        public override void HandleEvent(double clockTime,
+        public override void HandleEvent(double[] param,
+                                         double clockTime,
                                          Action<double, int> sampst,
                                          Action<double, int> timest,
                                          Action<int, double> scheduleEvent,
@@ -185,7 +187,8 @@ namespace CSC418ConsoleApp.SimLib
         private readonly double ST;
         public EndSimEventHandler() : base((int)EventType.ENDSIMULATION) {}
 
-        public override void HandleEvent(double clockTime,
+        public override void HandleEvent(double[] param,
+                                         double clockTime,
                                          Action<double, int> sampst,
                                          Action<double, int> timest,
                                          Action<int, double> scheduleEvent,
